@@ -97,7 +97,8 @@ private:
     std::string camera_name;
 
 public:
-    lidarImageProjection() {
+    lidarImageProjection(ros::NodeHandle n) {
+        nh = n;
         camera_in_topic = readParam<std::string>(nh, "camera_in_topic");
         lidar_in_topic = readParam<std::string>(nh, "lidar_in_topic");
         dist_cut_off = readParam<int>(nh, "dist_cut_off");
@@ -161,6 +162,7 @@ public:
                           int &image_width,
                           cv::Mat &D,
                           cv::Mat &K) {
+#if 0 // TODO: Don't know why open YAML file will crash...
         cv::FileStorage fs_cam_config(cam_config_file_path, cv::FileStorage::READ);
         if(!fs_cam_config.isOpened())
             std::cerr << "Error: Wrong path: " << cam_config_file_path << std::endl;
@@ -175,6 +177,19 @@ public:
         fs_cam_config["fy"] >> K.at<double>(1, 1);
         fs_cam_config["cx"] >> K.at<double>(0, 2);
         fs_cam_config["cy"] >> K.at<double>(1, 2);
+#else
+        image_height = 1920;
+        image_width = 1280;
+        D.at<double>(0) = 0.014455;
+        D.at<double>(1) = -0.001207;
+        D.at<double>(2) = -0.003741;
+        D.at<double>(3) = -0.003155;
+        D.at<double>(4) = 0.0;
+        K.at<double>(0, 0) = 1413.827001;
+        K.at<double>(1, 1) = 1457.320123;
+        K.at<double>(0, 2) = 959.023025;
+        K.at<double>(1, 2) = 631.096347;
+#endif
     }
 
     template <typename T>
@@ -390,8 +405,9 @@ public:
 };
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "cam_lidar_proj");
-    lidarImageProjection lip;
+    ros::init(argc, argv, "cam_lidar_proj_node");
+    ros::NodeHandle nh("~");
+    lidarImageProjection points_image_projection(nh);
     ros::spin();
     return 0;
 }

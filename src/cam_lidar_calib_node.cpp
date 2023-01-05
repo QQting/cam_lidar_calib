@@ -37,6 +37,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
+#include <opencv2/calib3d.hpp>
 
 #include <cv_bridge/cv_bridge.h>
 
@@ -160,6 +161,7 @@ public:
                           int &image_width,
                           cv::Mat &D,
                           cv::Mat &K) {
+#if 0 // TODO: Don't know why open YAML file will crash...
         cv::FileStorage fs_cam_config(cam_config_file_path, cv::FileStorage::READ);
         if(!fs_cam_config.isOpened())
             std::cerr << "Error: Wrong path: " << cam_config_file_path << std::endl;
@@ -174,6 +176,19 @@ public:
         fs_cam_config["fy"] >> K.at<double>(1, 1);
         fs_cam_config["cx"] >> K.at<double>(0, 2);
         fs_cam_config["cy"] >> K.at<double>(1, 2);
+#else
+        image_height = 1920;
+        image_width = 1280;
+        D.at<double>(0) = 0.014455;
+        D.at<double>(1) = -0.001207;
+        D.at<double>(2) = -0.003741;
+        D.at<double>(3) = -0.003155;
+        D.at<double>(4) = 0.0;
+        K.at<double>(0, 0) = 1413.827001;
+        K.at<double>(1, 1) = 1457.320123;
+        K.at<double>(0, 2) = 959.023025;
+        K.at<double>(1, 2) = 631.096347;
+#endif
     }
 
     template <typename T>
@@ -312,7 +327,7 @@ public:
                                       image_points,
                                       boardDetectedInCam);
             if(image_points.size() == object_points.size()){
-                cv::solvePnP(object_points, image_points, projection_matrix, distCoeff, rvec, tvec, false, CV_ITERATIVE);
+                cv::solvePnP(object_points, image_points, projection_matrix, distCoeff, rvec, tvec, false, cv::SOLVEPNP_ITERATIVE);
                 projected_points.clear();
                 cv::projectPoints(object_points, rvec, tvec, projection_matrix, distCoeff, projected_points, cv::noArray());
                 for(int i = 0; i < projected_points.size(); i++){
@@ -468,7 +483,7 @@ public:
 
                 }
             } else {
-                ROS_WARN_STREAM("Not enough Rotation, view not recorded");
+                ROS_WARN_STREAM("Not enough Rotation(), view not recorded. Current Rotation=" << r3.dot(r3_old));
             }
         } else {
             if(!boardDetectedInCam)
@@ -489,9 +504,9 @@ public:
 };
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "CameraLidarCalib_node");
+    ros::init(argc, argv, "cam_lidar_calib_node");
     ros::NodeHandle nh("~");
-    camLidarCalib cLC(nh);
+    camLidarCalib camera_lidar_calibration(nh);
     ros::spin();
     return 0;
 }

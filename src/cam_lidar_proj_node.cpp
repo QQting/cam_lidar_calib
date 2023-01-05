@@ -89,7 +89,8 @@ private:
     pcl::PointCloud<pcl::PointXYZRGB> out_cloud_pcl;
     cv::Mat image_in;
 
-    int dist_cut_off;
+    int dist_cut_off_image;
+    int dist_cut_off_points;
 
     std::string cam_config_file_path;
     int image_width, image_height;
@@ -101,7 +102,8 @@ public:
         nh = n;
         camera_in_topic = readParam<std::string>(nh, "camera_in_topic");
         lidar_in_topic = readParam<std::string>(nh, "lidar_in_topic");
-        dist_cut_off = readParam<int>(nh, "dist_cut_off");
+        dist_cut_off_image = readParam<int>(nh, "dist_cut_off_image");
+        dist_cut_off_points = readParam<int>(nh, "dist_cut_off_points");
         camera_name = readParam<std::string>(nh, "camera_name");
         cloud_sub =  new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh, lidar_in_topic, 1);
         image_sub = new message_filters::Subscriber<sensor_msgs::Image>(nh, camera_in_topic, 1);
@@ -286,6 +288,12 @@ public:
         out_cloud_pcl.resize(objectPoints_L.size());
 
         for(size_t i = 0; i < objectPoints_L.size(); i++) {
+        
+            if (objectPoints_L[i].x > dist_cut_off_points) {
+                // ignore the points which exceeds the distance(=dist_cut_off_points)
+                continue;
+            }
+        
             cv::Vec3b rgb = atf(image_in, imagePoints[i]);
             pcl::PointXYZRGB pt_rgb(rgb.val[2], rgb.val[1], rgb.val[0]);
             pt_rgb.x = objectPoints_L[i].x;
@@ -295,17 +303,22 @@ public:
         }
     }
 
-    void colorLidarPointsOnImage(double min_range,
-            double max_range) {
+    void colorLidarPointsOnImage(double min_range, double max_range) {
         for(size_t i = 0; i < imagePoints.size(); i++) {
             double X = objectPoints_C[i].x;
             double Y = objectPoints_C[i].y;
             double Z = objectPoints_C[i].z;
             double range = sqrt(X*X + Y*Y + Z*Z);
-            double red_field = 255*(range - min_range)/(max_range - min_range);
-            double green_field = 255*(max_range - range)/(max_range - min_range);
-            cv::circle(image_in, imagePoints[i], 2,
-                       CV_RGB(red_field, green_field, 0), -1, 1, 0);
+            if (range > dist_cut_off_image) {
+                // ignore the points which exceeds the distance(=dist_cut_off_image)
+                continue;
+            }
+            if (max_range > dist_cut_off_image) {
+                max_range = dist_cut_off_image;
+            }
+            double red = 255*(range - min_range)/(max_range - min_range);
+            double green = 255*(max_range - range)/(max_range - min_range);
+            cv::circle(image_in, imagePoints[i], 5, cv::Scalar(0, green, red), -1);
         }
     }
 
@@ -318,10 +331,16 @@ public:
         publishTransforms();
         image_in = cv_bridge::toCvShare(image_msg, "bgr8")->image;
 
-
         double fov_x, fov_y;
-        fov_x = 2*atan2(image_width, 2*projection_matrix.at<double>(0, 0))*180/CV_PI;
-        fov_y = 2*atan2(image_height, 2*projection_matrix.at<double>(1, 1))*180/CV_PI;
+        #if 1
+            // TODO: fov_x and fov_y are maybe inaccuracy?
+            // so we manually increase the value
+            fov_x = 70;
+            fov_y = 85;
+        #else
+            fov_x = 2*atan2(image_width, 2*projection_matrix.at<double>(0, 0))*180/CV_PI;
+            fov_y = 2*atan2(image_height, 2*projection_matrix.at<double>(1, 1))*180/CV_PI;
+        #endif
 
         double max_range, min_range;
         max_range = -INFINITY;
@@ -342,7 +361,7 @@ public:
             for(size_t i = 0; i < in_cloud->points.size(); i++) {
 
                 // Reject points behind the LiDAR(and also beyond certain distance)
-                if(in_cloud->points[i].x < 0 || in_cloud->points[i].x > dist_cut_off)
+                if(in_cloud->points[i].x < 0 /*|| in_cloud->points[i].x > dist_cut_off*/)
                     continue;
 
                 Eigen::Vector4d pointCloud_L;

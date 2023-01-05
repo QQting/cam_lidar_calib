@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
 
+  <arg name="dist_cut_off_image" default="2" />
+  <arg name="dist_cut_off_points" default="3" />
+
   <arg name="use_sim_time" default="false" />
+  <arg name="camera_name" default="port_1" />
 
   <node pkg="cam_lidar_calib" name="cam_lidar_proj" type="cam_lidar_proj_node" output="screen">
     <param name="use_sim_time" value="$(arg use_sim_time)"/>
     <param name="project_only_plane" type="bool" value="false"/>
     <param name="camera_in_topic" type="string" value="/port_1/camera/image_raw"/>
     <param name="lidar_in_topic" type="string" value="/ouster/points"/>
-    <param name="camera_name" type="string" value="tier4_camera"/>
-    <param name="dist_cut_off" type="int" value="5"/>
+    <param name="camera_name" type="string" value="$(arg camera_name)"/>
+    <param name="dist_cut_off_image" type="int" value="$(arg dist_cut_off_image)"/>
+    <param name="dist_cut_off_points" type="int" value="$(arg dist_cut_off_points)"/>
     <param name="cam_config_file_path" type="string" value="$(find cam_lidar_calib)/config/tier4_c1.yaml"/>
     <param name="result_file" type="string" value="$(find cam_lidar_calib)/result/EW2023/calibated_result.txt"/>
   </node>

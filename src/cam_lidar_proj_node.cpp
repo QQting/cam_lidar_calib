@@ -289,10 +289,12 @@ public:
 
         for(size_t i = 0; i < objectPoints_L.size(); i++) {
         
+#if 0
             if (objectPoints_L[i].x > dist_cut_off_points) {
                 // ignore the points which exceeds the distance(=dist_cut_off_points)
                 continue;
             }
+#endif
         
             cv::Vec3b rgb = atf(image_in, imagePoints[i]);
             pcl::PointXYZRGB pt_rgb(rgb.val[2], rgb.val[1], rgb.val[0]);
@@ -309,6 +311,7 @@ public:
             double Y = objectPoints_C[i].y;
             double Z = objectPoints_C[i].z;
             double range = sqrt(X*X + Y*Y + Z*Z);
+#if 1
             if (range > dist_cut_off_image) {
                 // ignore the points which exceeds the distance(=dist_cut_off_image)
                 continue;
@@ -316,6 +319,7 @@ public:
             if (max_range > dist_cut_off_image) {
                 max_range = dist_cut_off_image;
             }
+#endif
             double red = 255*(range - min_range)/(max_range - min_range);
             double green = 255*(max_range - range)/(max_range - min_range);
             cv::circle(image_in, imagePoints[i], 5, cv::Scalar(0, green, red), -1);
@@ -360,9 +364,11 @@ public:
 
             for(size_t i = 0; i < in_cloud->points.size(); i++) {
 
+#if 1
                 // Reject points behind the LiDAR(and also beyond certain distance)
                 if(in_cloud->points[i].x < 0 /*|| in_cloud->points[i].x > dist_cut_off*/)
                     continue;
+#endif                    
 
                 Eigen::Vector4d pointCloud_L;
                 pointCloud_L[0] = in_cloud->points[i].x;

@@ -1,0 +1,20 @@
+image_width: 1920
+image_height: 1280
+camera_name: tier4_c1
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1413.827001, 0, 959.023025, 0, 1457.320123, 631.096347, 0, 0, 1]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.014455, -0.001207, -0.003741, -0.003155, 0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1430.405884, 0, 952.305715, 0, 0, 1475.765015, 625.689746, 0, 0, 0, 1, 0]

@@ -3,7 +3,8 @@ Panels:
     Help Height: 0
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /TF1/Frames1
       Splitter Ratio: 0.5
     Tree Height: 140
   - Class: rviz/Selection
@@ -90,6 +91,38 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        os_imu:
+          Value: false
+        os_lidar:
+          Value: false
+        os_sensor:
+          Value: true
+        port_1:
+          Value: false
+        tier4_camera:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        os_sensor:
+          os_imu:
+            {}
+          os_lidar:
+            {}
+          port_1:
+            {}
+          tier4_camera:
+            {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -118,25 +151,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.552436351776123
+      Distance: 6.644204139709473
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.3457902669906616
-        Y: 0.06315290927886963
-        Z: 0.8776065707206726
+        X: 1.0910415649414062
+        Y: 0.23633554577827454
+        Z: 0.2273348718881607
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3803977370262146
+      Pitch: 0.3303976058959961
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.11039662361145
+      Yaw: 3.1572153568267822
     Saved: ~
 Window Geometry:
   Displays:

@@ -54,6 +54,8 @@
 #include <fstream>
 #include <iostream>
 
+#define DEBUG_POINTS_ENABLE 0
+
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2,
                                                         sensor_msgs::Image> SyncPolicy;
 
@@ -65,6 +67,7 @@ private:
     message_filters::Subscriber<sensor_msgs::Image> *image_sub;
     message_filters::Synchronizer<SyncPolicy> *sync;
     ros::Publisher cloud_pub;
+    ros::Publisher debug_cloud_pub;
 
     cv::Mat image_in;
     cv::Mat image_resized;
@@ -117,7 +120,11 @@ public:
         image_sub = new message_filters::Subscriber<sensor_msgs::Image>(nh, camera_in_topic, 1);
         sync = new message_filters::Synchronizer<SyncPolicy>(SyncPolicy(10), *cloud_sub, *image_sub);
         sync->registerCallback(boost::bind(&camLidarCalib::callback, this, _1, _2));
+#if DEBUG_POINTS_ENABLE
         cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("points_out", 1);
+        debug_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("debug_points_out", 1);
+#endif
+
         projection_matrix = cv::Mat::zeros(3, 3, CV_64F);
         distCoeff = cv::Mat::zeros(5, 1, CV_64F);
         boardDetectedInCam = false;
@@ -290,12 +297,23 @@ public:
         ransac.getInliers(inliers_indicies);
         pcl::copyPointCloud<pcl::PointXYZ>(*cloud_filtered_z, inliers_indicies, *plane);
 
+#if DEBUG_POINTS_ENABLE
+        {
+            sensor_msgs::PointCloud2 out_cloud;
+            pcl::toROSMsg(*plane, out_cloud);
+            out_cloud.header.frame_id = cloud_msg->header.frame_id;
+            out_cloud.header.stamp = cloud_msg->header.stamp;
+            debug_cloud_pub.publish(out_cloud);
+            ROS_INFO_STREAM("Number of planar_pts before removing outlier: " << plane->points.size());
+        }
+#endif
+
         /// Statistical Outlier Removal
         pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
         sor.setInputCloud(plane);
-        sor.setMeanK (50);
-        sor.setStddevMulThresh (1);
-        sor.filter (*plane_filtered);
+        sor.setMeanK(50);
+        sor.setStddevMulThresh(1);
+        sor.filter(*plane_filtered);
 
         /// Store the points lying in the filtered plane in a vector
         lidar_points.clear();
@@ -306,12 +324,16 @@ public:
             lidar_points.push_back(Eigen::Vector3d(X, Y, Z));
         }
 //        ROS_INFO_STREAM("No of planar_pts: " << lidar_points.size());
-        ROS_WARN_STREAM("No of planar_pts: " << plane_filtered->points.size());
-//        sensor_msgs::PointCloud2 out_cloud;
-//        pcl::toROSMsg(*plane_filtered, out_cloud);
-//        out_cloud.header.frame_id = cloud_msg->header.frame_id;
-//        out_cloud.header.stamp = cloud_msg->header.stamp;
-//        cloud_pub.publish(out_cloud);
+        ROS_INFO_STREAM("Number of planar_pts: " << plane_filtered->points.size());
+#if DEBUG_POINTS_ENABLE
+        {
+            sensor_msgs::PointCloud2 out_cloud;
+            pcl::toROSMsg(*plane_filtered, out_cloud);
+            out_cloud.header.frame_id = cloud_msg->header.frame_id;
+            out_cloud.header.stamp = cloud_msg->header.stamp;
+            cloud_pub.publish(out_cloud);
+        }
+#endif
     }
 
     void imageHandler(const sensor_msgs::ImageConstPtr &image_msg) {
@@ -489,8 +511,7 @@ public:
             if(!boardDetectedInCam)
                 ROS_WARN_STREAM("Checker-board not detected in Image.");
             else {
-                ROS_WARN_STREAM("Checker Board Detected in Image?: " << boardDetectedInCam << "\t" <<
-                "No of LiDAR pts: " << lidar_points.size() << " (Check if this is less than threshold) ");
+                ROS_WARN_STREAM("LiDAR pts=" << lidar_points.size() << " are less than threshold=" << min_points_on_plane);
             }
         }
     }

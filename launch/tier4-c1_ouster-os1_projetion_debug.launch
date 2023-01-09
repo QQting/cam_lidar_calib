@@ -5,7 +5,7 @@
   <arg name="dist_cut_off_points" default="3" />
 
   <arg name="use_sim_time" default="false" />
-  <arg name="camera_name" default="port_0" />
+  <arg name="camera_name" default="port_1" />
   <arg name="open_rviz" default="false" />
 
   <node pkg="cam_lidar_calib" name="cam_lidar_proj_$(arg camera_name)" type="cam_lidar_proj_node" output="screen">
@@ -17,7 +17,7 @@
     <param name="dist_cut_off_image" type="int" value="$(arg dist_cut_off_image)"/>
     <param name="dist_cut_off_points" type="int" value="$(arg dist_cut_off_points)"/>
     <param name="cam_config_file_path" type="string" value="$(find cam_lidar_calib)/config/tier4_c1.yaml"/>
-    <param name="result_file" type="string" value="$(find cam_lidar_calib)/result/EW2023/calibated_result_$(arg camera_name).txt"/>
+    <param name="result_file" type="string" value="$(find cam_lidar_calib)/result/EW2023/calibated_result_debug.txt"/>
   </node>
   
   <node if="$(arg open_rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find cam_lidar_calib)/config/view_result.rviz"/>

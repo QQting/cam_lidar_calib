@@ -186,15 +186,21 @@ public:
 #else
         image_height = 1920;
         image_width = 1280;
-        D.at<double>(0) = 0.014455;
-        D.at<double>(1) = -0.001207;
-        D.at<double>(2) = -0.003741;
-        D.at<double>(3) = -0.003155;
-        D.at<double>(4) = 0.0;
+        // D.at<double>(0) = 0.014455;
+        // D.at<double>(1) = -0.001207;
+        // D.at<double>(2) = -0.003741;
+        // D.at<double>(3) = -0.003155;
+        // D.at<double>(4) = 0.0;
+        
+        // K.at<double>(0, 0) = 1920.0;
+        // K.at<double>(1, 1) = 1280.0;
+        K.at<double>(0, 2) = 960.0;
+        K.at<double>(1, 2) = 640.0;
+        
         K.at<double>(0, 0) = 1413.827001;
         K.at<double>(1, 1) = 1457.320123;
-        K.at<double>(0, 2) = 959.023025;
-        K.at<double>(1, 2) = 631.096347;
+        // K.at<double>(0, 2) = 959.023025;
+        // K.at<double>(1, 2) = 631.096347;
 #endif
     }
 

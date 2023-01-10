@@ -4,7 +4,7 @@
   <arg name="use_sim_time" default="false" />
   <arg name="camera_name" default="port_0" />
 
-  <node pkg="cam_lidar_calib" name="cam_lidar_calib" type="cam_lidar_calib_node" output="screen">
+  <node pkg="cam_lidar_calib" name="cam_lidar_calib_$(arg camera_name)" type="cam_lidar_calib_node" output="screen">
     <param name="use_sim_time" value="$(arg use_sim_time)"/>
   	<param name="camera_in_topic" type="string" value="/$(arg camera_name)/camera/image_raw"/>
   	<param name="lidar_in_topic" type="string" value="/ouster/points"/>
@@ -13,22 +13,16 @@
   	<param name="checkerboard_rows" type="int" value="11" />
   	<param name="checkerboard_cols" type="int" value= "8" />
   	<param name="min_points_on_plane" type="int" value="700"/>
-  	<param name="num_views" type="int" value="10"/>
-	<param name="no_of_initializations" type="int" value="1"/>
-	<!-- <param name="x_min" value="-4"/>
-    <param name="x_max" value="4"/>
-    <param name="y_min" value="-4"/>
-    <param name="y_max" value="4"/>
-    <param name="z_min" value="-3"/>
-    <param name="z_max" value="3"/> -->
-    <param name="x_min" value="0.5"/>
-    <param name="x_max" value="6"/>
-    <param name="y_min" value="-2"/>
+  	<param name="num_views" type="int" value="20"/>
+	  <param name="no_of_initializations" type="int" value="1"/>
+    <param name="x_min" value="-1.5"/>
+    <param name="x_max" value="1.5"/>
+    <param name="y_min" value="0.5"/>
     <param name="y_max" value="2"/>
     <param name="z_min" value="-2"/>
     <param name="z_max" value="2"/>
     <param name="ransac_threshold" value="0.01"/>
-    <param name="initializations_file" value="$(find cam_lidar_calib)/result/EW2023/init_file.txt"/>
+    <param name="initializations_file" value="$(find cam_lidar_calib)/result/EW2023/init_file_$(arg camera_name).txt"/>
   	<param name="cam_config_file_path" type="string" value="$(find cam_lidar_calib)/config/tier4_c1.yaml"/>
   	<param name="result_file" type="string" value="$(find cam_lidar_calib)/result/EW2023/calibated_result_$(arg camera_name).txt"/>
   	<param name="result_rpy_file" type="string" value="$(find cam_lidar_calib)/result/EW2023/rpy_txyz_calibated_result_$(arg camera_name).txt"/>

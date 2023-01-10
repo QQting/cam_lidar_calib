@@ -76,7 +76,7 @@ private:
     cv::Mat projection_matrix;
     cv::Mat distCoeff;
 
-    std::vector<cv::Point3d> objectPoints_L, objectPoints_C;
+    std::vector<cv::Point3d> objectPoints_L/*, objectPoints_C*/;
     std::vector<cv::Point2d> imagePoints;
 
     sensor_msgs::PointCloud2 out_cloud_ros;
@@ -91,6 +91,9 @@ private:
 
     int dist_cut_off_image;
     int dist_cut_off_points;
+    double x_min, x_max;
+    double y_min, y_max;
+    double z_min, z_max;
 
     std::string cam_config_file_path;
     int image_width, image_height;
@@ -104,6 +107,12 @@ public:
         lidar_in_topic = readParam<std::string>(nh, "lidar_in_topic");
         dist_cut_off_image = readParam<int>(nh, "dist_cut_off_image");
         dist_cut_off_points = readParam<int>(nh, "dist_cut_off_points");
+        x_min = readParam<double>(nh, "x_min");
+        x_max = readParam<double>(nh, "x_max");
+        y_min = readParam<double>(nh, "y_min");
+        y_max = readParam<double>(nh, "y_max");
+        z_min = readParam<double>(nh, "z_min");
+        z_max = readParam<double>(nh, "z_max");
         camera_name = readParam<std::string>(nh, "camera_name");
         cloud_sub =  new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh, lidar_in_topic, 1);
         image_sub = new message_filters::Subscriber<sensor_msgs::Image>(nh, camera_in_topic, 1);
@@ -182,15 +191,23 @@ public:
 #else
         image_height = 1920;
         image_width = 1280;
-        D.at<double>(0) = 0.014455;
-        D.at<double>(1) = -0.001207;
-        D.at<double>(2) = -0.003741;
-        D.at<double>(3) = -0.003155;
-        D.at<double>(4) = 0.0;
+        // D.at<double>(0) = 0.014455;
+        // D.at<double>(1) = -0.001207;
+        // D.at<double>(2) = -0.003741;
+        // D.at<double>(3) = -0.003155;
+        // D.at<double>(4) = 0.0;
+        
+        // K.at<double>(0, 0) = 1920.0;
+        // K.at<double>(1, 1) = 1280.0;
+        
+        K.at<double>(0, 2) = 960.0;
+        K.at<double>(1, 2) = 640.0;            
+        
         K.at<double>(0, 0) = 1413.827001;
         K.at<double>(1, 1) = 1457.320123;
-        K.at<double>(0, 2) = 959.023025;
-        K.at<double>(1, 2) = 631.096347;
+        
+        // K.at<double>(0, 2) = 959.023025;
+        // K.at<double>(1, 2) = 631.096347;
 #endif
     }
 
@@ -307,9 +324,9 @@ public:
 
     void colorLidarPointsOnImage(double min_range, double max_range) {
         for(size_t i = 0; i < imagePoints.size(); i++) {
-            double X = objectPoints_C[i].x;
-            double Y = objectPoints_C[i].y;
-            double Z = objectPoints_C[i].z;
+            double X = objectPoints_L[i].x;
+            double Y = objectPoints_L[i].y;
+            double Z = objectPoints_L[i].z;
             double range = sqrt(X*X + Y*Y + Z*Z);
 #if 1
             if (range > dist_cut_off_image) {
@@ -330,7 +347,7 @@ public:
                   const sensor_msgs::ImageConstPtr &image_msg) {
         lidar_frameId = cloud_msg->header.frame_id;
         objectPoints_L.clear();
-        objectPoints_C.clear();
+        // objectPoints_C.clear();
         imagePoints.clear();
         publishTransforms();
         image_in = cv_bridge::toCvShare(image_msg, "bgr8")->image;
@@ -364,9 +381,16 @@ public:
 
             for(size_t i = 0; i < in_cloud->points.size(); i++) {
 
-#if 1
+#if 0
                 // Reject points behind the LiDAR(and also beyond certain distance)
                 if(in_cloud->points[i].x < 0 /*|| in_cloud->points[i].x > dist_cut_off*/)
+                    continue;
+#else
+                if (in_cloud->points[i].x < x_min || in_cloud->points[i].x > x_max)
+                    continue;
+                if (in_cloud->points[i].y < y_min || in_cloud->points[i].y > y_max)
+                    continue;
+                if (in_cloud->points[i].z < z_min || in_cloud->points[i].z > z_max)
                     continue;
 #endif                    
 
@@ -402,13 +426,17 @@ public:
                 }
 
                 objectPoints_L.push_back(cv::Point3d(pointCloud_L[0], pointCloud_L[1], pointCloud_L[2]));
-                objectPoints_C.push_back(cv::Point3d(X, Y, Z));
+                // objectPoints_C.push_back(cv::Point3d(X, Y, Z));
             }
             cv::projectPoints(objectPoints_L, rvec, tvec, projection_matrix, distCoeff, imagePoints, cv::noArray());
         }
+        
+        // fprintf(stderr, "max_range=%.2lf, min_range=%.2lf\n", max_range, min_range);
 
         /// Color the Point Cloud
         colorPointCloud();
+
+        // fprintf(stderr, "***!!! Ting: debug-%s-%d\n", __FUNCTION__, __LINE__);
 
         pcl::toROSMsg(out_cloud_pcl, out_cloud_ros);
         out_cloud_ros.header.frame_id = cloud_msg->header.frame_id;
@@ -416,9 +444,12 @@ public:
 
         cloud_pub.publish(out_cloud_ros);
 
+// fprintf(stderr, "***!!! Ting: debug-%s-%d\n", __FUNCTION__, __LINE__);
+
         /// Color Lidar Points on the image a/c to distance
         colorLidarPointsOnImage(min_range, max_range);
 
+// fprintf(stderr, "***!!! Ting: debug-%s-%d\n", __FUNCTION__, __LINE__);
         sensor_msgs::ImagePtr msg =
                 cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_in).toImageMsg();
         image_pub.publish(msg);

@@ -57,9 +57,9 @@ private:
 
     ros::NodeHandle nh;
 
-    message_filters::Subscriber<sensor_msgs::PointCloud2> *cloud_sub;
-    message_filters::Subscriber<sensor_msgs::Image> *image_sub;
-    message_filters::Synchronizer<SyncPolicy> *sync;
+    std::shared_ptr< message_filters::Subscriber<sensor_msgs::PointCloud2> > cloud_sub;
+    std::shared_ptr< message_filters::Subscriber<sensor_msgs::Image> > image_sub;
+    std::shared_ptr< message_filters::Synchronizer<SyncPolicy> > sync;
 
     ros::Publisher cloud_pub;
     ros::Publisher image_pub;
@@ -114,14 +114,14 @@ public:
         z_min = readParam<double>(nh, "z_min");
         z_max = readParam<double>(nh, "z_max");
         camera_name = readParam<std::string>(nh, "camera_name");
-        cloud_sub =  new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh, lidar_in_topic, 1);
-        image_sub = new message_filters::Subscriber<sensor_msgs::Image>(nh, camera_in_topic, 1);
+        cloud_sub.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh, lidar_in_topic, 1));
+        image_sub.reset(new message_filters::Subscriber<sensor_msgs::Image>(nh, camera_in_topic, 1));
         std::string lidarOutTopic = camera_in_topic + "/velodyne_out_cloud";
         cloud_pub = nh.advertise<sensor_msgs::PointCloud2>(lidarOutTopic, 1);
         std::string imageOutTopic = camera_in_topic + "/projected_image";
         image_pub = nh.advertise<sensor_msgs::Image>(imageOutTopic, 1);
 
-        sync = new message_filters::Synchronizer<SyncPolicy>(SyncPolicy(10), *cloud_sub, *image_sub);
+        sync.reset(new message_filters::Synchronizer<SyncPolicy>(SyncPolicy(10), *cloud_sub, *image_sub));
         sync->registerCallback(boost::bind(&lidarImageProjection::callback, this, _1, _2));
 
         C_T_L = Eigen::Matrix4d::Identity();
@@ -375,9 +375,9 @@ public:
             }
             cv::projectPoints(objectPoints_L, rvec, tvec, projection_matrix, distCoeff, imagePoints, cv::noArray());
         } else {
-            pcl::PCLPointCloud2 *cloud_in = new pcl::PCLPointCloud2;
-            pcl_conversions::toPCL(*cloud_msg, *cloud_in);
-            pcl::fromPCLPointCloud2(*cloud_in, *in_cloud);
+            pcl::PCLPointCloud2 cloud_in;
+            pcl_conversions::toPCL(*cloud_msg, cloud_in);
+            pcl::fromPCLPointCloud2(cloud_in, *in_cloud);
 
             for(size_t i = 0; i < in_cloud->points.size(); i++) {
 

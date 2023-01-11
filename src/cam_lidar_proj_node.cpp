@@ -116,7 +116,7 @@ public:
         camera_name = readParam<std::string>(nh, "camera_name");
         cloud_sub.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh, lidar_in_topic, 1));
         image_sub.reset(new message_filters::Subscriber<sensor_msgs::Image>(nh, camera_in_topic, 1));
-        std::string lidarOutTopic = camera_in_topic + "/velodyne_out_cloud";
+        std::string lidarOutTopic = camera_in_topic + "/colored_points";
         cloud_pub = nh.advertise<sensor_msgs::PointCloud2>(lidarOutTopic, 1);
         std::string imageOutTopic = camera_in_topic + "/projected_image";
         image_pub = nh.advertise<sensor_msgs::Image>(imageOutTopic, 1);
@@ -337,8 +337,8 @@ public:
                 max_range = dist_cut_off_image;
             }
 #endif
-            double red = 255*(range - min_range)/(max_range - min_range);
-            double green = 255*(max_range - range)/(max_range - min_range);
+            double green = 255*(range - min_range)/(max_range - min_range);
+            double red = 255*(max_range - range)/(max_range - min_range);
             cv::circle(image_in, imagePoints[i], 5, cv::Scalar(0, green, red), -1);
         }
     }

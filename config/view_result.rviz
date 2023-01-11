@@ -88,7 +88,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.019999999552965164
       Style: Flat Squares
-      Topic: /port_1/camera/image_raw/velodyne_out_cloud
+      Topic: /port_1/camera/image_raw/colored_points
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true

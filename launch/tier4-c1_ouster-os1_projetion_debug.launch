@@ -2,7 +2,7 @@
 <launch>
 
   <arg name="dist_cut_off_image" default="2" />
-  <arg name="dist_cut_off_points" default="3" />
+  <arg name="dist_cut_off_points" default="6" />
   <arg name="x_min" value="0"/>
   <arg name="x_max" value="10"/>
   <arg name="y_min" value="-2"/>

@@ -2,7 +2,7 @@
 <launch>
 
   <arg name="dist_cut_off_image" default="2" />
-  <arg name="dist_cut_off_points" default="3" />
+  <arg name="dist_cut_off_points" default="6" />
   <arg name="x_min" value="-2"/>
   <arg name="x_max" value="2"/>
   <arg name="y_min" value="0"/>
@@ -22,12 +22,12 @@
     <param name="camera_name" type="string" value="$(arg camera_name)"/>
     <param name="dist_cut_off_image" type="int" value="$(arg dist_cut_off_image)"/>
     <param name="dist_cut_off_points" type="int" value="$(arg dist_cut_off_points)"/>
-    <param name="x_min" value="$(arg x_min)"/>
+    <!-- <param name="x_min" value="$(arg x_min)"/>
     <param name="x_max" value="$(arg x_max)"/>
     <param name="y_min" value="$(arg y_min)"/>
     <param name="y_max" value="$(arg y_max)"/>
     <param name="z_min" value="$(arg z_min)"/>
-    <param name="z_max" value="$(arg z_max)"/>
+    <param name="z_max" value="$(arg z_max)"/> -->
     <param name="cam_config_file_path" type="string" value="$(find cam_lidar_calib)/config/tier4_c1.yaml"/>
     <param name="result_file" type="string" value="$(find cam_lidar_calib)/result/EW2023/calibated_result_$(arg camera_name).txt"/>
   </node>

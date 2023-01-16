@@ -197,8 +197,8 @@ public:
         K.at<double>(0, 2) = 960.0;
         K.at<double>(1, 2) = 640.0;
         
-        K.at<double>(0, 0) = 1413.827001;
-        K.at<double>(1, 1) = 1457.320123;
+        K.at<double>(0, 0) = 1417.396341;
+        K.at<double>(1, 1) = 1461.808872;
         // K.at<double>(0, 2) = 959.023025;
         // K.at<double>(1, 2) = 631.096347;
 #endif
@@ -293,6 +293,11 @@ public:
         pass_z.setFilterLimits(z_min, z_max);
         pass_z.filter(*cloud_filtered_z);
 
+        if (cloud_filtered_z->size() <= 0) {
+            ROS_WARN_STREAM("Number of planar_pts <= 0");
+            return;
+        }
+
         /// Plane Segmentation
         pcl::SampleConsensusModelPlane<pcl::PointXYZ>::Ptr model_p(
                 new pcl::SampleConsensusModelPlane<pcl::PointXYZ>(cloud_filtered_z));
@@ -310,7 +315,7 @@ public:
             out_cloud.header.frame_id = cloud_msg->header.frame_id;
             out_cloud.header.stamp = cloud_msg->header.stamp;
             debug_cloud_pub.publish(out_cloud);
-            ROS_INFO_STREAM("Number of planar_pts before removing outlier: " << plane->points.size());
+            // ROS_INFO_STREAM("Number of planar_pts before removing outlier: " << plane->points.size());
         }
 #endif
 

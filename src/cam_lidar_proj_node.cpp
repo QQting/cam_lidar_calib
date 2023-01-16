@@ -78,6 +78,7 @@ private:
 
     std::vector<cv::Point3d> objectPoints_L/*, objectPoints_C*/;
     std::vector<cv::Point2d> imagePoints;
+    std::vector<double> points_range;
 
     sensor_msgs::PointCloud2 out_cloud_ros;
 
@@ -203,8 +204,8 @@ public:
         K.at<double>(0, 2) = 960.0;
         K.at<double>(1, 2) = 640.0;            
         
-        K.at<double>(0, 0) = 1413.827001;
-        K.at<double>(1, 1) = 1457.320123;
+        K.at<double>(0, 0) = 1417.396341;
+        K.at<double>(1, 1) = 1461.808872;
         
         // K.at<double>(0, 2) = 959.023025;
         // K.at<double>(1, 2) = 631.096347;
@@ -327,7 +328,7 @@ public:
             double X = objectPoints_L[i].x;
             double Y = objectPoints_L[i].y;
             double Z = objectPoints_L[i].z;
-            double range = sqrt(X*X + Y*Y + Z*Z);
+            double range = points_range[i];
 #if 1
             if (range > dist_cut_off_image) {
                 // ignore the points which exceeds the distance(=dist_cut_off_image)
@@ -349,6 +350,7 @@ public:
         objectPoints_L.clear();
         // objectPoints_C.clear();
         imagePoints.clear();
+        points_range.clear();
         publishTransforms();
         image_in = cv_bridge::toCvShare(image_msg, "bgr8")->image;
 
@@ -417,26 +419,24 @@ public:
                     continue;
 
                 double range = sqrt(X*X + Y*Y + Z*Z);
-
                 if(range > max_range) {
                     max_range = range;
                 }
                 if(range < min_range) {
                     min_range = range;
                 }
+                points_range.push_back(range);
 
                 objectPoints_L.push_back(cv::Point3d(pointCloud_L[0], pointCloud_L[1], pointCloud_L[2]));
-                // objectPoints_C.push_back(cv::Point3d(X, Y, Z));
             }
-            cv::projectPoints(objectPoints_L, rvec, tvec, projection_matrix, distCoeff, imagePoints, cv::noArray());
+
+            if (objectPoints_L.size() > 0) {
+                cv::projectPoints(objectPoints_L, rvec, tvec, projection_matrix, distCoeff, imagePoints, cv::noArray());
+            }            
         }
         
-        // fprintf(stderr, "max_range=%.2lf, min_range=%.2lf\n", max_range, min_range);
-
-        /// Color the Point Cloud
+        /// Color the Point Cloud        
         colorPointCloud();
-
-        // fprintf(stderr, "***!!! Ting: debug-%s-%d\n", __FUNCTION__, __LINE__);
 
         pcl::toROSMsg(out_cloud_pcl, out_cloud_ros);
         out_cloud_ros.header.frame_id = cloud_msg->header.frame_id;
@@ -444,19 +444,12 @@ public:
 
         cloud_pub.publish(out_cloud_ros);
 
-// fprintf(stderr, "***!!! Ting: debug-%s-%d\n", __FUNCTION__, __LINE__);
-
         /// Color Lidar Points on the image a/c to distance
         colorLidarPointsOnImage(min_range, max_range);
 
-// fprintf(stderr, "***!!! Ting: debug-%s-%d\n", __FUNCTION__, __LINE__);
         sensor_msgs::ImagePtr msg =
                 cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_in).toImageMsg();
         image_pub.publish(msg);
-//        cv::Mat image_resized;
-//        cv::resize(lidarPtsImg, image_resized, cv::Size(), 0.25, 0.25);
-//        cv::imshow("view", image_resized);
-//        cv::waitKey(10);
     }
 };
 

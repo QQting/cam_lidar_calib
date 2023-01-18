@@ -31,7 +31,7 @@
     <param name="y_max" value="$(arg y_max)"/>
     <param name="z_min" value="$(arg z_min)"/>
     <param name="z_max" value="$(arg z_max)"/>
-    <param name="cam_config_file_path" type="string" value="$(find cam_lidar_calib)/config/tier4_c1.yaml"/>
+    <param name="cam_config_file_path" type="string" value="$(find cam_lidar_calib)/config/tier4_c1_72_calibrated_param_1920x1280.yaml"/>
     <param name="result_file" type="string" value="$(find cam_lidar_calib)/result/EW2023/calibated_result_debug.txt"/>
   </node>
   

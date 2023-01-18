@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   message_filters
   cv_bridge
+  camera_calibration_parsers
   tf
   tf_conversions
 )

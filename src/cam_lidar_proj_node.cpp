@@ -46,6 +46,9 @@
 #include <tf/transform_broadcaster.h>
 #include <tf_conversions/tf_eigen.h>
 
+#include "camera_calibration_parsers/parse.h"
+#include "sensor_msgs/CameraInfo.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -173,43 +176,27 @@ public:
                           int &image_height,
                           int &image_width,
                           cv::Mat &D,
-                          cv::Mat &K) {
-#if 0 // TODO: Don't know why open YAML file will crash...
-        cv::FileStorage fs_cam_config(cam_config_file_path, cv::FileStorage::READ);
-        if(!fs_cam_config.isOpened())
-            std::cerr << "Error: Wrong path: " << cam_config_file_path << std::endl;
-        fs_cam_config["image_height"] >> image_height;
-        fs_cam_config["image_width"] >> image_width;
-        fs_cam_config["k1"] >> D.at<double>(0);
-        fs_cam_config["k2"] >> D.at<double>(1);
-        fs_cam_config["p1"] >> D.at<double>(2);
-        fs_cam_config["p2"] >> D.at<double>(3);
-        fs_cam_config["k3"] >> D.at<double>(4);
-        fs_cam_config["fx"] >> K.at<double>(0, 0);
-        fs_cam_config["fy"] >> K.at<double>(1, 1);
-        fs_cam_config["cx"] >> K.at<double>(0, 2);
-        fs_cam_config["cy"] >> K.at<double>(1, 2);
-#else
-        image_height = 1920;
-        image_width = 1280;
-        // D.at<double>(0) = 0.014455;
-        // D.at<double>(1) = -0.001207;
-        // D.at<double>(2) = -0.003741;
-        // D.at<double>(3) = -0.003155;
-        // D.at<double>(4) = 0.0;
+                          cv::Mat &K) 
+    {
+        sensor_msgs::CameraInfo camera_info;
+        std::string camera_name;
+        camera_calibration_parsers::readCalibration(cam_config_file_path, camera_name, camera_info);
+
+        ROS_INFO_STREAM("Loaded " << camera_name << " calibration info.");
         
-        // K.at<double>(0, 0) = 1920.0;
-        // K.at<double>(1, 1) = 1280.0;
+        image_width = camera_info.width;
+        image_height = camera_info.height;
         
-        K.at<double>(0, 2) = 960.0;
-        K.at<double>(1, 2) = 640.0;            
+        D.at<double>(0) = camera_info.D[0];
+        D.at<double>(1) = camera_info.D[1];
+        D.at<double>(2) = camera_info.D[2];
+        D.at<double>(3) = camera_info.D[3];
+        D.at<double>(4) = camera_info.D[4];
         
-        K.at<double>(0, 0) = 1417.396341;
-        K.at<double>(1, 1) = 1461.808872;
-        
-        // K.at<double>(0, 2) = 959.023025;
-        // K.at<double>(1, 2) = 631.096347;
-#endif
+        K.at<double>(0, 0) = camera_info.K[0];
+        K.at<double>(1, 1) = camera_info.K[4];
+        K.at<double>(0, 2) = camera_info.K[2];
+        K.at<double>(1, 2) = camera_info.K[5];
     }
 
     template <typename T>

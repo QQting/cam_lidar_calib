@@ -1,6 +1,6 @@
 image_width: 1920
 image_height: 1280
-camera_name: tier4_c1
+camera_name: tier4_c1_72
 camera_matrix:
   rows: 3
   cols: 3

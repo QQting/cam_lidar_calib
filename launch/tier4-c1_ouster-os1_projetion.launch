@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
 
-  <arg name="dist_cut_off_image" default="2" />
+  <arg name="dist_cut_off_image" default="3" />
   <arg name="dist_cut_off_points" default="6" />
+  <arg name="cam_config_file_path" default="$(find cam_lidar_calib)/config/tier4_c1_72_calibrated_param_1920x1280.yaml" />
   <arg name="x_min" value="-2"/>
   <arg name="x_max" value="2"/>
   <arg name="y_min" value="0"/>
   <arg name="y_max" value="5"/>  
   <arg name="z_min" value="-2"/>
   <arg name="z_max" value="2"/>
-
+  
   <arg name="use_sim_time" default="false" />
-  <arg name="camera_name" default="port_0" />
+  <arg name="camera_name" default="port_1" />
   <arg name="open_rviz" default="false" />
 
   <node pkg="cam_lidar_calib" name="cam_lidar_proj_$(arg camera_name)" type="cam_lidar_proj_node" output="screen">
@@ -22,13 +23,13 @@
     <param name="camera_name" type="string" value="$(arg camera_name)"/>
     <param name="dist_cut_off_image" type="int" value="$(arg dist_cut_off_image)"/>
     <param name="dist_cut_off_points" type="int" value="$(arg dist_cut_off_points)"/>
-    <!-- <param name="x_min" value="$(arg x_min)"/>
-    <param name="x_max" value="$(arg x_max)"/>
-    <param name="y_min" value="$(arg y_min)"/>
-    <param name="y_max" value="$(arg y_max)"/>
-    <param name="z_min" value="$(arg z_min)"/>
-    <param name="z_max" value="$(arg z_max)"/> -->
-    <param name="cam_config_file_path" type="string" value="$(find cam_lidar_calib)/config/tier4_c1.yaml"/>
+    <param name="x_min" value="0.6"/>
+    <param name="x_max" value="6.0"/>
+    <param name="y_min" value="-2.0"/>
+    <param name="y_max" value="2.0"/>
+    <param name="z_min" value="-5.0"/>
+    <param name="z_max" value="5.0"/>
+    <param name="cam_config_file_path" type="string" value="$(arg cam_config_file_path)"/>
     <param name="result_file" type="string" value="$(find cam_lidar_calib)/result/EW2023/calibated_result_$(arg camera_name).txt"/>
   </node>
   

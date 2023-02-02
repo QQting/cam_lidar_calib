@@ -12,17 +12,12 @@ find_package(catkin REQUIRED COMPONENTS
   camera_calibration_parsers
   tf
   tf_conversions
+  message_generation
 )
 
 find_package( PCL REQUIRED)
 find_package( OpenCV REQUIRED)
 find_package( Ceres REQUIRED)
-
-catkin_package(
-  INCLUDE_DIRS include
-  CATKIN_DEPENDS
-  DEPENDS PCL
-)
 
 include_directories(
   include
@@ -32,11 +27,26 @@ include_directories(
   ${CERES_INCLUDE_DIRS}
 )
 
+add_message_files(
+  FILES
+  ImageDepth.msg
+)
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+)
+catkin_package(
+  INCLUDE_DIRS include
+  CATKIN_DEPENDS message_runtime
+  DEPENDS PCL
+)
 
 add_executable(${PROJECT_NAME}_node src/cam_lidar_calib_node.cpp)
 
 add_executable(cam_lidar_proj_node src/cam_lidar_proj_node.cpp)
 
+add_dependencies(cam_lidar_proj_node ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}

@@ -2,15 +2,41 @@
 <launch>
   
   <include file="$(find cam_lidar_calib)/launch/tier4-c1_ouster-os1_projetion.launch">
-    <arg name="camera_name"           value="port_0"/>
-    <arg name="cam_config_file_path"  value="$(find cam_lidar_calib)/config/tier4_c1_72_calibrated_param_1920x1280.yaml"/>
+    <arg name="camera_name"           value="port_1"/>
+    <arg name="cam_config_file_path"  value="$(find cam_lidar_calib)/config/tier4_c1_85_calibrated_param_1920x1280.yaml"/>
   </include>
   
   <include file="$(find cam_lidar_calib)/launch/tier4-c1_ouster-os1_projetion.launch">
-    <arg name="camera_name"           value="port_1"/>
-    <arg name="cam_config_file_path"  value="$(find cam_lidar_calib)/config/tier4_c1_72_calibrated_param_1920x1280.yaml"/>
+    <arg name="camera_name"           value="port_3"/>
+    <arg name="cam_config_file_path"  value="$(find cam_lidar_calib)/config/tier4_c1_120_calibrated_param_1920x1280.yaml"/>
   </include>
 
+  <include file="$(find cam_lidar_calib)/launch/tier4-c1_ouster-os1_projetion.launch">
+    <arg name="camera_name"           value="port_5"/>
+    <arg name="cam_config_file_path"  value="$(find cam_lidar_calib)/config/tier4_c1_85_calibrated_param_1920x1280.yaml"/>
+  </include>
+  
+  <include file="$(find cam_lidar_calib)/launch/tier4-c1_ouster-os1_projetion.launch">
+    <arg name="camera_name"           value="port_7"/>
+    <arg name="cam_config_file_path"  value="$(find cam_lidar_calib)/config/tier4_c1_120_calibrated_param_1920x1280.yaml"/>
+  </include>
+  
+  <include file="$(find ros_deep_learning)/launch/ew_demo_AI.launch">
+    <arg name="camera_name"           value="port_1"/>
+  </include>
+  
+  <include file="$(find ros_deep_learning)/launch/ew_demo_AI.launch">
+    <arg name="camera_name"           value="port_3"/>
+  </include>
+  
+  <include file="$(find ros_deep_learning)/launch/ew_demo_AI.launch">
+    <arg name="camera_name"           value="port_5"/>
+  </include>
+  
+  <include file="$(find ros_deep_learning)/launch/ew_demo_AI.launch">
+    <arg name="camera_name"           value="port_7"/>
+  </include>
+  
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cam_lidar_calib)/config/view_result_multicam.rviz"/>
 
 </launch>

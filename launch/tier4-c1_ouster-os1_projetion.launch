@@ -12,10 +12,10 @@
   <arg name="z_max" value="2"/>
   
   <arg name="use_sim_time" default="false" />
-  <arg name="camera_name" default="port_1" />
+  <arg name="camera_name"  />
   <arg name="open_rviz" default="false" />
 
-  <node pkg="cam_lidar_calib" name="cam_lidar_proj_$(arg camera_name)" type="cam_lidar_proj_node" output="screen">
+  <node pkg="cam_lidar_calib" ns="$(arg camera_name)" name="cam_lidar_proj" type="cam_lidar_proj_node" output="screen">
     <param name="use_sim_time" value="$(arg use_sim_time)"/>
     <param name="project_only_plane" type="bool" value="false"/>
     <param name="camera_in_topic" type="string" value="/$(arg camera_name)/camera/image_raw"/>
@@ -30,7 +30,7 @@
     <param name="z_min" value="-5.0"/>
     <param name="z_max" value="5.0"/>
     <param name="cam_config_file_path" type="string" value="$(arg cam_config_file_path)"/>
-    <param name="result_file" type="string" value="$(find cam_lidar_calib)/result/EW2023/calibated_result_$(arg camera_name).txt"/>
+    <param name="result_file" type="string" value="$(find cam_lidar_calib)/result/EW2023/calibrated_result_$(arg camera_name).txt"/>
   </node>
   
   <node if="$(arg open_rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find cam_lidar_calib)/config/view_result.rviz"/>

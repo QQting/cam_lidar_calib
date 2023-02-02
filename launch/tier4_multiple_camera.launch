@@ -1,23 +1,41 @@
 <launch>
 
-    <arg name="index0"        default="0"/>
-    <arg name="index1"        default="1"/>
-    <arg name="index2"        default="2"/>
-    <arg name="index3"        default="3"/>
+    <arg name="index0"        default="1"/>
+    <arg name="index1"        default="3"/>
+    <arg name="index2"        default="5"/>
+    <arg name="index3"        default="7"/>
+    <arg name="camera_name0"   default="tier4_c1_85"/>
+    <arg name="camera_name1"   default="tier4_c1_120"/>
+    <arg name="camera_name2"   default="tier4_c1_85"/>
+    <arg name="camera_name3"   default="tier4_c1_120"/>
     <arg name="delay0"        default="0"/>
-    <arg name="delay1"        default="4"/>
-    <arg name="delay2"        default="8"/>
-    <arg name="delay3"        default="12"/>
+    <arg name="delay1"        default="3"/>
+    <arg name="delay2"        default="6"/>
+    <arg name="delay3"        default="9"/>
     <arg name="open_rviz"     default="false"/>
 
     <include file="$(find cam_lidar_calib)/launch/tier4_single_camera.launch">
       <arg name="index"             value="$(arg index0)"/>
+      <arg name="camera_name"       value="$(arg camera_name0)"/>
       <arg name="node_start_delay"  value="$(arg delay0)"/>
     </include>
     
     <include file="$(find cam_lidar_calib)/launch/tier4_single_camera.launch">
       <arg name="index"             value="$(arg index1)"/>
+      <arg name="camera_name"       value="$(arg camera_name1)"/>
       <arg name="node_start_delay"  value="$(arg delay1)"/>
+    </include>
+    
+    <include file="$(find cam_lidar_calib)/launch/tier4_single_camera.launch">
+      <arg name="index"             value="$(arg index2)"/>
+      <arg name="camera_name"       value="$(arg camera_name2)"/>
+      <arg name="node_start_delay"  value="$(arg delay2)"/>
+    </include>
+    
+    <include file="$(find cam_lidar_calib)/launch/tier4_single_camera.launch">
+      <arg name="index"             value="$(arg index3)"/>
+      <arg name="camera_name"       value="$(arg camera_name3)"/>
+      <arg name="node_start_delay"  value="$(arg delay3)"/>
     </include>
 
     <!-- open rviz -->

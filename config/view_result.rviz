@@ -108,7 +108,7 @@ Visualization Manager:
         port_1:
           Value: true
         tier4_camera:
-          Value: false
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true

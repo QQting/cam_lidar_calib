@@ -46,6 +46,9 @@
 #include <tf/transform_broadcaster.h>
 #include <tf_conversions/tf_eigen.h>
 
+#include <geometry_msgs/Point32.h>
+#include <cam_lidar_calib/ImageDepth.h>
+
 #include "camera_calibration_parsers/parse.h"
 #include "sensor_msgs/CameraInfo.h"
 
@@ -66,6 +69,7 @@ private:
 
     ros::Publisher cloud_pub;
     ros::Publisher image_pub;
+    ros::Publisher image_depth_pub;
 
     cv::Mat c_R_l, tvec;
     cv::Mat rvec;
@@ -124,6 +128,8 @@ public:
         cloud_pub = nh.advertise<sensor_msgs::PointCloud2>(lidarOutTopic, 1);
         std::string imageOutTopic = camera_in_topic + "/projected_image";
         image_pub = nh.advertise<sensor_msgs::Image>(imageOutTopic, 1);
+        std::string depthOutTopic = camera_in_topic + "/image_depth";
+        image_depth_pub = nh.advertise<cam_lidar_calib::ImageDepth>(depthOutTopic, 1);
 
         sync.reset(new message_filters::Synchronizer<SyncPolicy>(SyncPolicy(10), *cloud_sub, *image_sub));
         sync->registerCallback(boost::bind(&lidarImageProjection::callback, this, _1, _2));
@@ -288,6 +294,23 @@ public:
         br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), lidar_frameId, camera_name));
     }
 
+    void fill_image_depth(cam_lidar_calib::ImageDepthPtr &depth_image, const std_msgs::Header &header) {
+#if 0
+        for (auto i = 0; i < imagePoints.size(); ++i) {
+            fprintf(stderr, "%03d:(%03.2lf,%03.2lf); obj:((%03.2lf,%03.2lf))\n", i, imagePoints[i].x, imagePoints[i].y, objectPoints_L[i].x, objectPoints_L[i].y);
+        }
+#endif
+        depth_image->header = header;
+        depth_image->header.frame_id = "image_depth_" + camera_name;
+        depth_image->size = imagePoints.size();
+        depth_image->data.resize(depth_image->size);
+        for (auto i = 0; i < depth_image->size; ++i) {
+            depth_image->data[i].x = imagePoints[i].x;
+            depth_image->data[i].y = imagePoints[i].y;
+            depth_image->data[i].z = points_range[i];
+        }
+    }
+
     void colorPointCloud() {
         out_cloud_pcl.points.clear();
         out_cloud_pcl.resize(objectPoints_L.size());
@@ -332,6 +355,7 @@ public:
 
     void callback(const sensor_msgs::PointCloud2ConstPtr &cloud_msg,
                   const sensor_msgs::ImageConstPtr &image_msg) {
+        std_msgs::Header header(image_msg->header);
         lidar_frameId = cloud_msg->header.frame_id;
         objectPoints_L.clear();
         // objectPoints_C.clear();
@@ -369,18 +393,13 @@ public:
 
             for(size_t i = 0; i < in_cloud->points.size(); i++) {
 
-#if 0
-                // Reject points behind the LiDAR(and also beyond certain distance)
-                if(in_cloud->points[i].x < 0 /*|| in_cloud->points[i].x > dist_cut_off*/)
-                    continue;
-#else
+                // Ignore points behind the certain distance
                 if (in_cloud->points[i].x < x_min || in_cloud->points[i].x > x_max)
                     continue;
                 if (in_cloud->points[i].y < y_min || in_cloud->points[i].y > y_max)
                     continue;
                 if (in_cloud->points[i].z < z_min || in_cloud->points[i].z > z_max)
                     continue;
-#endif                    
 
                 Eigen::Vector4d pointCloud_L;
                 pointCloud_L[0] = in_cloud->points[i].x;
@@ -436,6 +455,11 @@ public:
         sensor_msgs::ImagePtr msg =
                 cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_in).toImageMsg();
         image_pub.publish(msg);
+        
+        // Use ImageDepthPtr as a shared_ptr
+        cam_lidar_calib::ImageDepthPtr depth_msg(new cam_lidar_calib::ImageDepth());
+        fill_image_depth(depth_msg, header);
+        image_depth_pub.publish(depth_msg);
     }
 };
 

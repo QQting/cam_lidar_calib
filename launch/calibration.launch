@@ -19,7 +19,7 @@
   	<param name="dy" type="double" value="0.065"/>
   	<param name="checkerboard_rows" type="int" value="11" />
   	<param name="checkerboard_cols" type="int" value= "8" />
-  	<param name="min_points_on_plane" type="int" value="750"/>
+  	<param name="min_points_on_plane" type="int" value="600"/>
   	<param name="num_views" type="int" value="20"/>
 	  <param name="no_of_initializations" type="int" value="1"/>
     <param name="x_min" value="$(arg x_min)"/>
